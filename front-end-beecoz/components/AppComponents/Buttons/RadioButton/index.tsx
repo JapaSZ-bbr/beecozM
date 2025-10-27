@@ -23,7 +23,10 @@ export const AppRadioButton = ({ values, getValue }: AppRadioButtonProps) => {
   return (
     <FormContainer>
       {values.map((value) => (
-        <FormContent onPress={() => handleCheck(value.value)}>
+        <FormContent
+          key={value.value}
+          onPress={() => handleCheck(value.value)}
+        >
           <CheckContainer
             
             isChecked={isChecked?.value === value.value ? true : false}

@@ -28,42 +28,78 @@ export const ClientRegisterLoginScreen = ({
   const [email, setEmail] = useState("");
   const [cellPhone, setCellPhone] = useState("");
   const [disabled, setDisabled] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [check, setCheck] = useState(false);
   const theme = useTheme();
 
   const handleNavigateToNextStep = async () => {
-    try {
-      const {data} = await api.post<{message: string}>('/auth/clients/login/exists', {
-        login: email ? email : cellPhone
-      })
-
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) { 
-        const errorMessage = {error: error.response?.data as {message: string}}
-
-        console.log(errorMessage.error.message)
-
-        Alert.alert(
-          "Erro",
-          errorMessage.error.message,
-          [
-            {
-              text: 'Sair',
-              style: 'cancel'
-            }
-          ],
-          {
-            cancelable: true,
-          }
-        )
-
-        return
-      }
+    if (isSubmitting) {
+      return;
     }
 
-    setNewClient((prev: any) => ({ ...prev, login: email ? email : cellPhone }));
+    const rawLogin = check ? cellPhone : email;
+    const trimmedLogin = rawLogin.trim();
 
-    navigate("registerClientPassword");
+    if (!trimmedLogin) {
+      Alert.alert(
+        "Atenção",
+        "Informe um e-mail ou número de telefone válido para continuar."
+      );
+      setDisabled(true);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await api.post<{ message: string }>("/auth/clients/login/exists", {
+        login: trimmedLogin,
+      });
+
+      setNewClient((prev: any) => ({ ...prev, login: trimmedLogin }));
+      navigate("registerClientPassword");
+      return;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const serverMessage = (
+          error.response?.data as { message?: string } | undefined
+        )?.message;
+
+        const alertMessage = serverMessage
+          ? serverMessage
+          : error.code === "ERR_NETWORK"
+          ? "Não foi possível conectar ao servidor. Verifique sua conexão com a internet e tente novamente."
+          : "Não foi possível verificar o login informado. Tente novamente em instantes.";
+
+        Alert.alert("Erro", alertMessage, [{ text: "OK", style: "default" }], {
+          cancelable: true,
+        });
+        console.error("Erro ao verificar login do cliente:", error.message);
+        return;
+      }
+
+    Alert.alert(
+        "Erro",
+        "Ocorreu um erro inesperado. Tente novamente em instantes.",
+        [{ text: "OK", style: "default" }],
+        {
+          cancelable: true,
+        }
+      );
+      console.error("Erro inesperado ao verificar login do cliente:", error);
+      return;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+    const handleToggleLoginType = () => {
+    setCheck((prevCheck) => {
+      const nextCheck = !prevCheck;
+      const nextValue = nextCheck ? cellPhone : email;
+      setDisabled(nextValue.trim().length === 0);
+      return nextCheck;
+    });
   };
 
   return (
@@ -90,9 +126,9 @@ export const ClientRegisterLoginScreen = ({
             value={email}
             masked={false}
             onChangeText={(text) => {
-              if (email !== "") setDisabled(false);
-
+              const trimmedText = text.trim();
               setEmail(text);
+              setDisabled(trimmedText.length === 0);
             }}
           />
         ) : (
@@ -103,9 +139,9 @@ export const ClientRegisterLoginScreen = ({
             masked={true}
             mask={"cel-phone"}
             onChangeText={(text) => {
-              if (cellPhone !== "") setDisabled(false);
-
+              const trimmedText = text.trim();
               setCellPhone(text);
+              setDisabled(trimmedText.length === 0);
             }}
           />
         )}
@@ -122,7 +158,7 @@ export const ClientRegisterLoginScreen = ({
             marginTop: 5,
           }}
         >
-          <AppCheckBox onChangeValue={() => setCheck(!check)}/>
+          <AppCheckBox onChangeValue={handleToggleLoginType} />
           <Text style={{ color: theme.colors.white, fontWeight: "100" }}>
             Registrar com número
           </Text>
@@ -130,7 +166,7 @@ export const ClientRegisterLoginScreen = ({
       </DataContainer>
       <ButtonContainer>
         <AppGenericButton
-          disabled={disabled}
+          disabled={disabled || isSubmitting}
           title={"Continuar"}
           onClick={handleNavigateToNextStep}
         />
