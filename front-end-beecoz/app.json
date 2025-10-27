@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "beecoz",
+    "slug": "beecoz",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.yagosakata.beecoz"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c8184c6b-dd64-486e-b798-2e716cd45b89"
+      }
+    },
+    "owner": "vinicius17888"
+  }
+}
