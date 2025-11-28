@@ -15,8 +15,8 @@ export const AboutProfileScreen = () => {
           }}
         >
           Nós somos uma empresa nova da qual foi originada em uma equipe de TCC
-          (Trabalho de Conclusão de Curso), da Etec Merdelinda Giannini
-          Teixeira.
+          (Trabalho de Conclusão de Curso) composto por Vinicius de Carvalho e
+           Yago Sakata, da Fatec Santana de Parnaiba.
           {"\n"}
           {"\n"}A Beecoz busca a igualdade de gênero e de raça para todos, uma
           empresa que promove a inclusão digital e busca promover o direito de
